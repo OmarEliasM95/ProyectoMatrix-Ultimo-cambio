@@ -1,0 +1,248 @@
+{% extends 'menu.html' %}
+{% load static %}
+{% block title %} Compras {% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/compras.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row">
+        <div class="card col-12 col-md-6 p-3 mb-3" id="tarjeta" style="min-height: 400px;">
+            <b>Seleccione Proveedor</b>
+            <form id="Proveedor" action="{% url 'seleccionar_proveedor' %}" method="POST" {% if productos_agregados %}style="display:none;"{% endif %} >
+                {% csrf_token %}
+                {{ formulario_proveedor }}
+                <button type="submit" class="btn btn-success float-end">Confirmar</button>
+            </form>
+            <div>
+                {% if lista_productos_proveedor %}
+                    <table class="table table-striped table-responsive" id="productosProveedorTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre Producto</th>
+                                <th>Costo</th>
+                                <th>Cantidad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for elemento in lista_productos_proveedor %}
+                                <tr>
+                                    <td>{{ elemento.producto.nombre }}</td>
+                                    <form action="{% url 'agregar_producto_compra' elemento.producto.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <td><input type="number" name="precio_compra" class="form-control" required></td>
+                                        <td><input type="number" name="cantidad" class="form-control" required></td>
+                                        <td><button type="submit" class="btn btn-success" {% if productos_agregados %}disabled{% endif %}>Agregar</button></td>
+                                    </form>
+                                </tr>  
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div id="paginationControls" class="mt-3 text-center"></div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <strong>¡Atención!</strong> No hay productos relacionados con este proveedor.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 card p-3 mb-3" style="min-height: 400px;">
+            <h2 class="text-center">COMPRA Nº {{ compra.id }}</h2>
+            <h2 class="text-center">Fecha: {{ formulario_proveedor.instance.fecha_compra }}</h2>
+            <h3 class="text-center">Proveedor: {% if proveedor %}{{ proveedor.nombre }}{% else %}No seleccionado{% endif %}</h3>
+            <form id="Formulario" action="{% url 'confirmar_compra' %}" method="POST">
+                {% csrf_token %}
+                <b>{{ formulario_metodo_pago }}</b>
+            </form>    
+            <table class="table table-striped table-responsive" id="tablaCompra">
+                <thead>
+                    <tr>
+                        <th>Nombre Producto</th>
+                        <th>Cantidad</th>
+                        <th>Costo</th>
+                        <th>Subtotal</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in lista_compra %}
+                        <tr>
+                            <td>{{ producto.producto.nombre }}</td>
+                            <td>{{ producto.cantidad }}</td>
+                            <td>{{ producto.precio_de_compra }}</td>
+                            <td>{{ producto.subtotal }}</td>
+                            <td>
+                                <form action="{% url 'eliminar_producto_compra' producto.producto.id %}" method="POST" class="eliminar-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                </form>
+                            </td>
+                        </tr>  
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="paginationControls2" class="mt-3 text-center"></div>
+            <h3>Total ${{ compra.total }}</h3>
+            <div class="container" {% if lista_compra|length == 0 %}style="display:none;"{% endif %}>
+                <button id="Boton" class="btn btn-success d-inline-block me-2">Confirmar Compra</button>
+                <form action="{% url 'cancelar_compra' %}" method="POST" id="cancelarCompraForm" class="d-inline-block">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-danger" id="cancelarCompraBtn">Cancelar Compra</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById("Boton").addEventListener("click", function(event) {
+        event.preventDefault();
+        const metodoPagoSelect = document.querySelector('select[name="metodo_pago"]');
+        const metodoPagoSeleccionado = metodoPagoSelect && metodoPagoSelect.value;
+            if (!metodoPagoSeleccionado) {
+                Swal.fire({
+                    title: 'Método de Pago Requerido',
+                    text: 'Por favor, selecciona un método de pago antes de confirmar la compra.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                });
+                return; 
+            }
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Una vez confirmada, la compra no se podrá modificar.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar',
+                allowOutsideClick: false, 
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire(
+                        'Compra Cargada',
+                        'La compra se ha cargado exitosamente.',
+                        'success'
+                    ).then(() => {
+                        document.getElementById("Formulario").submit();
+                    });
+                }
+            });
+    });
+    document.querySelectorAll('.eliminar-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: '¿Quieres eliminar este producto de la compra?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
+        });
+    });
+    document.getElementById('cancelarCompraBtn').addEventListener('click', function(event) {
+        event.preventDefault(); 
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Quieres cancelar esta compra? Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí',
+            cancelButtonText: 'No'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('cancelarCompraForm').submit();
+            }
+        });
+    });
+    const itemsPerPage = 10;  
+    let currentPage = 1;  
+
+    function paginate() {
+        const rows = document.querySelectorAll('#productosProveedorTable tbody tr');  
+        const totalPages = Math.ceil(rows.length / itemsPerPage);  
+
+        rows.forEach((row, index) => {
+            row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? 'table-row' : 'none';
+        });
+
+        const paginationControls = document.getElementById('paginationControls');
+        paginationControls.innerHTML = ''; 
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = 'btn btn-success btn-sm mx-1';  
+            pageButton.textContent = i;  
+            pageButton.addEventListener('click', function() {
+                currentPage = i;  
+                paginate();  
+            });
+            paginationControls.appendChild(pageButton);  
+        }
+    }
+    function paginate2() {
+        const rows = document.querySelectorAll('#tablaCompra tbody tr');  
+        const totalPages = Math.ceil(rows.length / itemsPerPage);  
+
+        rows.forEach((row, index) => {
+            row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? 'table-row' : 'none';
+        });
+
+        const paginationControls = document.getElementById('paginationControls2');
+        paginationControls.innerHTML = ''; 
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = 'btn btn-primary btn-sm mx-1';  
+            pageButton.textContent = i;  
+            pageButton.addEventListener('click', function() {
+                currentPage = i;  
+                paginate();  
+            });
+            paginationControls.appendChild(pageButton);  
+        }
+    }
+
+    window.onload = function() {
+        paginate();
+        paginate2();
+    };
+</script>
+{% if messages %}
+    <script type="text/javascript">
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: '{{ message }}',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            {% elif message.tags == 'error' %}
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '{{ message }}',
+                    showConfirmButton: true
+                });
+            {% endif %}
+        {% endfor %}
+    </script>
+{% endif %}
+
+{% endblock %}

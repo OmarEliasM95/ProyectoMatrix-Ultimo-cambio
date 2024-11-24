@@ -1,0 +1,26 @@
+{% extends 'menu.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-start mb-3">
+        <a href="{% url 'lista_producto' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
+    <h2>Productos Faltantes</h2>
+    {% if faltantes %}
+        <div class="alert alert-danger">
+            <strong>FALTANTES:</strong>
+            <ul>
+                {% for producto in faltantes %}
+                    <li>{{ producto.nombre }} Stock actual: {{ producto.existencias }} Stock mínimo: {{ producto.stock_minimo }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+            <strong>¡Todo está en orden!</strong> No hay productos faltantes en el inventario.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: 'Calibri', sans-serif;
+}
+
+.login-background {
+    background-image: url('/static/IMAGENES/fondo3.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.login-box {
+    max-width: 100%; 
+    width: 90%; 
+    max-width: 450px;
+    background: rgba(0, 0, 0, 0.8); 
+    color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+}
+
+.logo {
+    max-width: 400px; 
+    height: auto;
+    border-radius: 10%;
+    margin-bottom: -20px;
+}
+
+form {
+    margin-top: 10px;
+    text-align: center;
+}
+
+form .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+form .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    outline: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+form input[type="submit"] {
+    background: linear-gradient(45deg, #32a852, #1e7c31);
+    border: none;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: 100%; 
+    margin-top: 15px;
+}
+
+form input[type="submit"]:hover {
+    background: green;
+}
+
+.password-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    position: absolute;
+    top: 65%;
+    right: 10px;
+    transform: translateY(-50%);
+}
+
+.password-toggle i {
+    font-size: 1.5rem;
+    color: #000000;
+}
+
+.password-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .login-box {
+        padding: 15px; 
+    }
+    .logo {
+        max-width: 150px; 
+    }
+    form input[type="submit"] {
+        padding: 8px 10px;
+    }
+}

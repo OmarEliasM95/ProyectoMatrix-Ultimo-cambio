@@ -1,0 +1,18 @@
+<table class="table table-bordered table-hover">
+    <tr class="table-dark">
+        <th>Producto Nombre</th>
+        <th>Precio de venta</th>
+        <th>Cantidad</th>
+    </tr>
+
+    <tbody>
+        {% for item in productos_vendidos %}
+            <tr class="table-secondary">
+                <td>{{item.producto}}</td>
+                <td>${{item.subtotal}}</td>
+                <td>{{item.cantidad}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

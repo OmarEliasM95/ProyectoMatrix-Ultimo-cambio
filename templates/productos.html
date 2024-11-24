@@ -1,0 +1,153 @@
+{% extends 'menu.html' %}
+{% load static %}
+
+{% block title %} Inventario{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="card">
+        <div class="modal fade" id="mi-modal" tabindex="-1" aria-labelledby="miModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="miModalLabel">Agregar producto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'agregar_producto' %}" method="POST">
+                            {% csrf_token %}
+                            <table>
+                                {% for field in mostrar_formulario %}
+                                    <tr>
+                                        <td>
+                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        </td>
+                                        <td>
+                                            {{ field }} 
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                            <button type="submit" class="btn btn-success mt-2">Agregar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h1>Inventario</h1>
+        <div class="fil"> 
+            <input type="text" id="busqueda" placeholder="Buscar producto..." onkeyup="filtrarProductos()">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#mi-modal" value="Agregar">
+                <i class="bi bi-bag-plus-fill"></i>
+            </button>
+            <button class="btn btn-danger" title="Revisar faltantes" onclick="window.location.href='{% url 'faltantes_producto' %}'">
+                <i class="bi bi-card-list"></i>
+            </button>
+        </div>
+    
+
+        <div id="resultadoBusqueda">
+            <table id="tablaProductos" class="table table-secondary table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Precio de venta</th>
+                        <th>Stock</th>
+                        <th>Proveedores</th>
+                        {% if request.session.is_admin%}
+                        <th>Acciones</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in listado %}
+                    <tr>
+                        <td>{{ item.producto.nombre }}</td>
+                        <td>{{ item.producto.precio }}</td>
+                        <td>{{ item.producto.existencias }}</td>
+                        <td>
+                            {% if item.producto.proveedores.all %}
+                                <ul>
+                                    {% for proveedor in item.producto.proveedores.all|dictsort:"nombre" %}
+                                        <li>{{ proveedor.nombre }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <span>No tiene proveedores</span>
+                            {% endif %}
+                        </td>
+                        {% if request.session.is_admin %}
+                        <td>
+                            <a href="#" onclick="modal_editar_producto('{% url 'editar_producto' item.producto.id %}')" class="btn btn-primary">
+                                <i class="bi bi-pencil-square" title="Editar"></i> 
+                            </a>
+                            <form action="{% url 'eliminar_producto' item.producto.id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" id="btn-borrarProd" title="Borrar">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="Primera">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">anterior</a>
+                    </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.</span>
+                </li>
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<div class="modal fade" id="edicion" role="dialog"></div>
+<script src="{% static 'js/productos.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            console.log("Mensaje: {{ message|escapejs }}");
+            let icono = "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}question{% endif %}";
+            let titulo = "{% if message.tags == 'success' %}Éxito{% elif message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Advertencia{% elif message.tags == 'info' %}Información{% else %}Pregunta{% endif %}";
+            Swal.fire({
+                icon: icono,
+                title: titulo,
+                text: "{{ message|escapejs }}",
+                showConfirmButton: true,
+                timer: 3000  
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+
+{% endblock %}

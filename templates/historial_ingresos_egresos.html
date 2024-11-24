@@ -1,0 +1,61 @@
+{% extends 'menu.html' %}
+{% load static %}
+
+{% block title %} Historial de Ingresos/Egresos {% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/historial_compras.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="contenedor card">
+        <h2>HISTORIAL DE INGRESOS/EGRESOS</h2>
+        <table class="table table-hover table-bordered">
+            <tr class="table-dark">
+                <th>ID Movimiento</th>
+                <th>Empleado</th>
+                <th>Fecha</th>
+                <th>Ingreso/Monto</th>
+                <th>Tipo</th>
+            </tr>
+            <tbody class="table-secondary">
+                {% for ingreso_egreso in ingresos_egresos %}
+                    <tr>
+                        <td>{{ingreso_egreso.id}}</td>
+                        <td>{{ingreso_egreso.empleado.username}}</td>
+                        <td>{{ingreso_egreso.fecha_dinero}}</td>
+                        <td>$ {{ingreso_egreso.ing_egre}}</td>
+                        <td>{{ingreso_egreso.tipo_dinero}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="Primera">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">anterior</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+{% endblock %}

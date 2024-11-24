@@ -1,0 +1,144 @@
+{% extends 'menu.html' %}
+{% load static %}
+{% block title %} Reporte de compras{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <a href="{% url 'menu' %}" class="btn btn-secondary btn-sm position-absolute top-0 start-0 m-2" title="Volver">
+            <i class="bi bi-arrow-left"></i>
+        </a>        
+        <h1 class="card-title text-center">Reporte de Compras</h1>
+        <form id="filtro-form-1" class="row g-3 mb-3">
+            <div class="col-12 d-flex align-items-center justify-content-between">
+                <select id="filtro" name="filtro" class="form-select flex-grow-1 me-2">
+                    <option value="">Seleccionar Filtro</option>
+                    <option value="fechas">Filtrar por Fechas</option>
+                    <option value="mes">Filtrar por Mes</option>
+                    <option value="anio">Filtrar por Año</option>
+                </select>
+                <button type="submit" class="btn btn-success">Filtrar</button>
+            </div>
+
+            <div id="rango-fechas" class="d-none">
+                <div class="col-md-3">
+                    <label for="fechaInicio1" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fechaInicio1" name="fecha_inicio">
+                </div>
+                <div class="col-md-3">
+                    <label for="fechaFin1" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fechaFin1" name="fecha_fin">
+                </div>
+            </div>
+
+            <div id="filtro-mes" class="d-none">
+                <div class="col-md-3">
+                    <label for="mes1" class="form-label">Mes</label>
+                    <select id="mes1" name="mes" class="form-select">
+                        <option value="">Seleccionar Mes</option>
+                        {% for mes in meses %}
+                            <option value="{{ mes }}">{{ mes }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="filtro-anio" class="d-none">
+                <div class="col-md-3">
+                    <label for="anio1" class="form-label">Año</label>
+                    <select id="anio1" name="anio" class="form-select">
+                        <option value="">Seleccionar Año</option>
+                        {% for anio in anios %}
+                            <option value="{{ anio }}">{{ anio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+        <div class="card-body">
+            <div id="chart2" style="height: 400px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/grafico_compras.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
+
+<script>
+    var labelOption = { show: false };
+    var total_efectivo_compra = {{ total_efectivo|default:0 }};
+    var total_transferencia_compra = {{ total_transferencia|default:0 }};
+    var total_tarjeta_debito_compra = {{ total_tarjeta_debito|default:0 }};
+    var periodo = {{ periodo|safe|default:"[]" }};
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'error' in message.tags %}
+                Swal.fire({
+                    icon:'error',
+                    title:'Error',
+                    text:'{{ message }}',
+                    confirmButtonText: 'Aceptar'
+                });
+            {% elif 'info' in message.tags %}
+                Swal.fire({
+                    icon:'info',
+                    title:'Modificación',
+                    text: '{{ message }}',
+                    confirmButtonText:'Aceptar'
+                });
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    document.getElementById('filtro').addEventListener('change', function() {
+        var filtro = this.value;
+        document.getElementById('rango-fechas').classList.add('d-none');
+        document.getElementById('filtro-mes').classList.add('d-none');
+        document.getElementById('filtro-anio').classList.add('d-none');
+
+        if (filtro === 'fechas') {
+            document.getElementById('rango-fechas').classList.remove('d-none');
+        } else if (filtro === 'mes') {
+            document.getElementById('filtro-mes').classList.remove('d-none');
+        } else if (filtro === 'anio') {
+            document.getElementById('filtro-anio').classList.remove('d-none');
+        }
+    });
+
+    document.getElementById('filtro-form-1').addEventListener('submit', function(event) {
+        var filtro = document.getElementById('filtro').value;
+        var fechaInicio = document.getElementById('fechaInicio1').value;
+        var fechaFin = document.getElementById('fechaFin1').value;
+        var mes = document.getElementById('mes1').value;
+        var anio = document.getElementById('anio1').value;
+
+        if (filtro === 'fechas' && (!fechaInicio || !fechaFin)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Debe seleccionar un rango de fechas.',
+                confirmButtonText: 'Aceptar'
+            });
+            event.preventDefault();
+        } else if (filtro === 'mes' && !mes) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Debe seleccionar un mes.',
+                confirmButtonText: 'Aceptar'
+            });
+            event.preventDefault();
+        } else if (filtro === 'anio' && !anio) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Debe seleccionar un año.',
+                confirmButtonText: 'Aceptar'
+            });
+            event.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

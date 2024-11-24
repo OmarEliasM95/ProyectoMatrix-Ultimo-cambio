@@ -1,0 +1,18 @@
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Cantidad</th>
+        </tr>
+    </thead>
+    <tbody class="table-secondary">
+        {% for item in productos_comprados %}
+            <tr>
+                <td>{{ item.producto.nombre }}</td>
+                <td>${{ item.precio_de_compra }}</td>
+                <td>{{ item.cantidad }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

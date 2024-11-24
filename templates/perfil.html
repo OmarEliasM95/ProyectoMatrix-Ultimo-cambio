@@ -1,0 +1,73 @@
+{% extends 'menu.html' %}
+{% load static %}
+
+{% block title %}Perfil del Usuario{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/perfil.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+<div class="card p-4">
+    <h2 class="card-title">Perfil del Usuario</h2>
+    <form method="post" id="formulario-perfil">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" value="{{ empleado.get_full_name }}" class="input-estilo" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ empleado.username }}" class="input-estilo" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ empleado.email }}" class="input-estilo" readonly>
+        </div>
+        <div class="mb-3 position-relative">
+            <label for="password_actual">Contraseña Actual</label>
+            <input type="password" id="password_actual" name="password_actual" class="input-estilo" required>
+            <i class="bi bi-eye-slash-fill position-absolute" id="password_actual_icon" style="right: 10px; top: 45%; cursor: pointer; font-size:25;" onclick="verClave('password_actual', 'password_actual_icon')"></i>
+        </div>
+        <div class="mb-3 position-relative">
+            <label for="password">Nueva Contraseña</label>
+            <input type="password" id="password" name="password" class="input-estilo" required>
+            <i class="bi bi-eye-slash-fill position-absolute" id="password_icon" style="right: 10px; top: 45%; cursor: pointer; font-size:25;" onclick="verClave('password', 'password_icon')"></i>
+        </div>
+        <div class="mb-3 position-relative">
+            <label for="password_confirm">Confirmar Nueva Contraseña</label>
+            <input type="password" id="password_confirm" name="password_confirm" class="input-estilo" required>
+            <i class="bi bi-eye-slash-fill position-absolute" id="password_confirm_icon" style="right: 10px; top: 45%; cursor: pointer; font-size:25;" onclick="verClave('password_confirm', 'password_confirm_icon')"></i>
+        </div>
+        <div class="mb-3 position-relative" id="cont-boton">
+            <button type="submit" id="btn-cambiar" class="btn btn-success ">Cambiar Contraseña</button>
+        </div>
+    </form>
+    <div class="mb-3 position-relative">
+        <p>La nueva contraseña debe cumplir con los siguientes requisitos:</p>
+        <ul>
+            <li>Tener al menos 8 caracteres.</li>
+            <li>Contener al menos un número y una letra.</li>
+            <li>Ser diferente a la contraseña actual y al nombre de usuario.</li>
+        </ul>
+    </div>
+</div>
+</div>
+<script src="{% static 'js/perfil.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function verClave(inputId, iconId) {
+    const passwordInput = document.getElementById(inputId);
+    const passwordIcon = document.getElementById(iconId);
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordIcon.classList.remove('bi-eye-slash-fill');
+        passwordIcon.classList.add('bi-eye-fill');
+    } else {
+        passwordInput.type = 'password';
+        passwordIcon.classList.remove('bi-eye-fill');
+        passwordIcon.classList.add('bi-eye-slash-fill');
+    }}
+</script>
+{% endblock %}

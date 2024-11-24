@@ -1,0 +1,231 @@
+{% extends 'menu.html' %}
+{% load static %}
+
+{% block title %} Ventas {% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ventas.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.5/dist/sweetalert2.min.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                {% if lista_venta|length == 0 %}
+                    <span id="agregarventa"><b>Agregar venta:</b></span>
+                {% endif %}
+                <button class="btn btn-success btn-block btn-lg" data-bs-toggle="modal" data-bs-target="#inventarioModal" title="Inventario">
+                    <i class="bi bi-bag-plus-fill"></i>
+                </button>
+                {% if lista_venta|length > 0 %}
+                    <h2 class="card-title">VENTA {% if venta.id %} Nº {{ venta.id }} {% endif %}</h2>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio Unitario</th>
+                                <th>Cantidad</th>
+                                <th>Subtotal</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for producto in lista_venta %}
+                                <tr>
+                                    <td>{{ producto.producto.nombre }}</td>
+                                    <td>{{ producto.producto.precio }}</td>
+                                    <td>{{ producto.cantidad }}</td>
+                                    <td>{{ producto.subtotal }}</td>
+                                    <td>
+                                        <form action="{% url 'eliminar_producto_venta' producto.producto.id %}" method="post" class="eliminar-form">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h3>Total ${{ venta.total_venta }}</h3>
+
+                    <div class="container">
+                        <form id="confirmarVentaForm" action="{% url 'crear_factura' %}" method="post">
+                            {% csrf_token %}
+                            {{ formulario_metodoPago }} <br><br>
+                            <button type="button" class="btn btn-success d-inline-block me-2 confirmar-venta-btn">Confirmar</button>
+                            <button type="button" class="btn btn-danger" id="cancelarVentaBtn">Cancelar</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="inventarioModal" tabindex="-1" role="dialog" aria-labelledby="inventarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inventarioModalLabel">INVENTARIO</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="searchInput" class="form-control mb-3" placeholder="Buscar por Nombre...">
+                <table class="table" id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Precio Unitario</th>
+                            <th>Stock</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in lista_productos %}
+                            <tr class="inventory-item">
+                                <td><b>{{ producto.id }}</b></td>
+                                <td><b>{{ producto.nombre }}</b></td>
+                                <td><b>{{ producto.precio }}</b></td>
+                                <td><b>{{ producto.existencias }}</b></td>
+                                <td>
+                                    <form action="{% url 'agregar_producto' id_producto=producto.id %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="number" name="cantidad" value="1" min="1" max="{{ producto.existencias }}" class="form-control d-inline-block w-50">
+                                        <button type="submit" class="btn btn-success d-inline-block btn-lg" title="Agregar"><i class="bi bi-plus-circle-fill"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div id="paginationControls" class="mt-3 text-center"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.5/dist/sweetalert2.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmarVentaBtn = document.querySelector('.confirmar-venta-btn');
+        if (confirmarVentaBtn) {
+            confirmarVentaBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const metodoPagoSeleccionado = document.querySelector('[name="metodo_pago"]').value;
+                if (!metodoPagoSeleccionado) {
+                    Swal.fire({ title: 'Método de Pago Requerido', text: 'Por favor, selecciona un método de pago antes de confirmar la venta.', icon: 'warning', confirmButtonText: 'Ok' });
+                    return;
+                }
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Una vez confirmada, la venta no se podrá modificar.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Cancelar',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Venta Cargada', 'La venta se ha cargado exitosamente.', 'success').then(() => {
+                            document.getElementById("confirmarVentaForm").submit();
+                        });
+                    }
+                });
+            });
+        }
+
+        const cancelarVentaBtn = document.getElementById('cancelarVentaBtn');
+        if (cancelarVentaBtn) {
+            cancelarVentaBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción cancelará la venta y no podrá deshacerse.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Cancelar Venta',
+                    cancelButtonText: 'Volver',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{% url 'cancelar_venta' %}";
+                    }
+                });
+            });
+        }
+
+        const itemsPerPage = 10;
+        let currentPage = 1;
+
+        function paginate() {
+            const items = document.querySelectorAll('.inventory-item');
+            const visibleItems = Array.from(items).filter(item => item.style.display !== 'none');
+            const totalPages = Math.ceil(visibleItems.length / itemsPerPage);
+
+            visibleItems.forEach((item, index) => {
+                item.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? 'table-row' : 'none';
+            });
+
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = 'btn btn-success btn-sm mx-1';
+                pageButton.textContent = i;
+                pageButton.addEventListener('click', function() {
+                    currentPage = i;
+                    paginate();
+                });
+                paginationControls.appendChild(pageButton);
+            }
+        }
+
+        function filterTable() {
+            const filter = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('.inventory-item');
+            rows.forEach(row => {
+                const nameCell = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                row.style.display = nameCell.indexOf(filter) > -1 ? 'table-row' : 'none';
+            });
+            currentPage = 1;
+            paginate();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        paginate();
+    });
+    document.querySelectorAll('.eliminar-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: '¿Quieres eliminar este producto de la compra?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

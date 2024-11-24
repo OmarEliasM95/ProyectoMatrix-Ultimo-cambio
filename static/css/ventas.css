@@ -1,0 +1,57 @@
+.contenedor-flex {
+    display: flex; 
+    gap: 20px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;    
+}
+#agregarventa{
+    font-size: 25px;
+}
+#inventarioModal{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.columna_izquierda {
+    flex: 1;
+    width: 95%; 
+}
+
+h1 {
+    text-align: center;
+}
+
+.contenido {
+    flex: 1;
+    width: 95%; 
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    margin-top: 150px ;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #000;
+}
+
+@media (max-width: 768px) {
+    .contenedor-flex {
+        flex-direction: column; 
+    }
+    .columna_izquierda, .contenido {
+        width: 100%; 
+    }
+
+}

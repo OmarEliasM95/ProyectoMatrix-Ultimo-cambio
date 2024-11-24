@@ -1,0 +1,20 @@
+.main{
+    margin-top: 80px;
+}
+nav {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+.estado-caja {
+    padding: 1px;
+    margin-top: 5px;
+    text-align: center;
+}
+.bienvenido {
+    padding: 0.5rem;
+    text-align: center;
+    background-color: #343a40;
+    color: #fff;
+}
+body {
+    font-family: 'Calibri', sans-serif;
+}

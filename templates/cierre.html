@@ -1,0 +1,570 @@
+{% extends 'menu.html' %}
+{% load static %}
+
+{% block title %}Cierre de Caja{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/cierre.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-white">
+            <h1 class="card-title">CIERRE DE CAJA</h1>
+        </div>
+        <div class="card-body">
+            <div class="info-cierre mb-3">
+                <p><strong>Empleado:</strong> {{ user.username }}</p>
+                <p><strong>Fecha:</strong> {{ fecha_actual|date:"d/m/Y" }} <strong>Hora:</strong> {{ fecha_actual|time:"H:i" }}</p>
+                <p><strong>Saldo Inicial:</strong> ${{ formulario_cierre.instance.saldo_inicial }}</p>
+                <p><strong>Saldo Final:</strong> ${{ saldo_final }}</p>
+            </div>
+            <div class="contenedor-ingresos-egresos row">
+                <div class="lista-ingresos col-md-6">
+                    <h2>INGRESOS</h2>
+                        <h3>Ventas:</h3>
+                        <ul class="list-group">
+                            <li class="list-group-item"><b>Efectivo: ${{ ventas_efectivo }}</b><button onclick="$('#detVtaE').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                            <li class="list-group-item"><b>Transferencia: ${{ ventas_transferencia }}</b>   <button onclick="$('#detVtaT').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                            <li class="list-group-item"><b>Tarjeta de Crédito: ${{ ventas_tarjeta_credito }} </b><button onclick="$('#detVtaC').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                            <li class="list-group-item"><b>Tarjeta de Débito: ${{ ventas_tarjeta_debito }}</b>   <button onclick="$('#detVtaD').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                        </ul>
+                        <h3>Ingreso de dinero:</h3>
+                        <ul class="list-group">
+                            <li class="list-group-item"><b>Movimientos (+): {{ dinero_ingreso }}</b> <button onclick="$('#detIngreso').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                            <p><strong>Total Ingresos:  ${{ total_ingresos }}</strong></p>
+                        </ul>
+                </div>
+                <div class="lista-egresos col-md-6 ">
+                    <h2>EGRESOS</h2>
+                    <h3>Compras:</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item"><b>Efectivo: ${{ compras_efectivo }}</b> <button onclick="$('#detCompE').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                        <li class="list-group-item"><b>Transferencia: ${{ compras_transferencia }}</b> <button onclick="$('#detCompT').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                        <li class="list-group-item"><b>Tarjeta de Débito: ${{ compras_tarjeta_debito }}</b> <button onclick="$('#detCompD').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                        <li class="list-group-item"><b>Gastos: ${{ gastos_compra }} <button onclick="$('#detGastos').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                    </ul>
+                    <h3>Egreso de dinero:</h3>
+                    <ul class="list-group">                        
+                        <li class="list-group-item"><b>Movimientos (-) {{ dinero_egreso }}<button onclick="$('#detEgreso').modal('show');" class="btn btn-success float-end">Ver detalle</button></li>
+                        <p><strong>Total Egresos:</strong> ${{ total_egresos }}</p>
+                    </ul>
+
+
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-white text-end">
+            <form action="{% url 'cierre' %}" id="cerrar-form" method="POST" class="d-inline">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-danger" value="Cerrar caja">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle Ventas en Efectivo -->
+<div class="modal fade" id="detVtaE" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detalleVentasEfectivoModalLabel">Detalle ventas: Efectivo</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ventas-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-table-body">
+                            {% for venta in lista_ventas_efectivo %}
+                                <tr class="venta-row">
+                                    <td>{{ venta.id }}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_vendido in venta.productos_vendidos_set.all %}
+                                                <li>{{ producto_vendido.producto.nombre }} (Cantidad: {{ producto_vendido.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ venta.total_venta }}</td>
+                                    <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay ventas en efectivo registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL Ventas transferencia-->
+<div class="modal fade" id="detVtaT" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detVtaTransfLabel">Detalle ventas: Transferencia</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ventas-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-table-body">
+                            {% for venta in lista_ventas_transferencia %}
+                                <tr class="venta-row">
+                                    <td>{{ venta.id }}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_vendido in venta.productos_vendidos_set.all %}
+                                                <li>{{ producto_vendido.producto.nombre }} (Cantidad: {{ producto_vendido.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ venta.total_venta }}</td>
+                                    <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay ventas en transferencia registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL Detalle ingresos-->
+<div class="modal fade" id="detIngreso" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detIngLabel">Detalle Movimientos: Ingresos</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ingresos-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>fecha</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingresos-table-body">
+                            {% for ingreso in lista_dinero_ingreso %}
+                                <tr class="ingreso-row">
+                                    <td>{{ ingreso.id }}</td>
+                                    <td>{{ ingreso.fecha_dinero|date:"d/m/Y" }}</td>
+                                    <td>${{ ingreso.ing_egre }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay movimientos de ingresos registrados.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL Detalle egresos-->
+<div class="modal fade" id="detEgreso" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detEgrLabel">Detalle Movimientos: Egresos</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="egresos-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>fecha</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="egresos-table-body">
+                            {% for egreso in lista_dinero_egreso %}
+                                <tr class="egreso-row">
+                                    <td>{{ egreso.id }}</td>
+                                    <td>{{ egreso.fecha_dinero|date:"d/m/Y" }}</td>
+                                    <td>${{ egreso.ing_egre }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay movimientos de egresos registrados.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL Detalle Compras Efectivo -->
+<div class="modal fade" id="detCompE" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detCompELabel">Detalle Compras: Efectivo</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="compras-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                                <th>Proveedor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compras-table-body">
+                            {% for compra in lista_compras_efectivo %}
+                                <tr class="compra-row">
+                                    <td>{{ compra.id }}</td>
+                                    <td>{{ compra.fecha_compra|date:"d/m/Y"}}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_comprado in compra.compra_intermedio_set.all %}
+                                                <li>{{ producto_comprado.producto }} (Cantidad: {{ producto_comprado.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ compra.total }}</td>
+                                    <td>{{ compra.proveedor }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay compras en efectivo registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--MODAL Detalle Compras Transferencia -->
+<div class="modal fade" id="detCompT" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detCompTLabel">Detalle Compras: Transferencia</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="compras-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                                <th>Proveedor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compras-table-body">
+                            {% for compra in lista_compras_transferencia %}
+                                <tr class="compra-row">
+                                    <td>{{ compra.id }}</td>
+                                    <td>{{ compra.fecha_compra|date:"d/m/Y"}}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_comprado in compra.compra_intermedio_set.all %}
+                                                <li>{{ producto_comprado.producto }} (Cantidad: {{ producto_comprado.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ compra.total }}</td>
+                                    <td>{{ compra.proveedor }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay compras en transferencia registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--MODAL Detalle Compras Débito -->
+<div class="modal fade" id="detCompD" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detCompDLabel">Detalle Compras: Débito</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="compras-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                                <th>Proveedor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compras-table-body">
+                            {% for compra in lista_compras_debito %}
+                                <tr class="compra-row">
+                                    <td>{{ compra.id }}</td>
+                                    <td>{{ compra.fecha_compra|date:"d/m/Y"}}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_comprado in compra.compra_intermedio_set.all %}
+                                                <li>{{ producto_comprado.producto }} (Cantidad: {{ producto_comprado.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ compra.total }}</td>
+                                    <td>{{ compra.proveedor }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay ventas en tarjeta de débito registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL Detalle Gastos -->
+<div class="modal fade" id="detGastos" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detGastosLabel">Detalle Compras: Débito</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="gastos-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                                <th>Monto ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gastos-table-body">
+                            {% for gasto in lista_gastos %}
+                                <tr class="gasto-row">
+                                    <td>{{ gasto.id }}</td>
+                                    <td>{{ gasto.fecha|date:"d/m/Y"}}</td>
+                                    <td>{{ gasto.descripcion_gasto }}</td>
+                                    <td>$ {{ gasto.costo }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay gastos registrados.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--MODAL Ventas Débito-->
+<div class="modal fade" id="detVtaD" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detVtaDModalLabel">Detalle ventas: Débito</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ventas-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-table-body">
+                            {% for venta in lista_ventas_debito %}
+                                <tr class="venta-row">
+                                    <td>{{ venta.id }}</td>
+                                    <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_vendido in venta.productos_vendidos_set.all %}
+                                                <li>{{ producto_vendido.producto.nombre }} (Cantidad: {{ producto_vendido.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ venta.total_venta }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay ventas en tarjeta de débito registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL Ventas Crédito-->
+<div class="modal fade" id="detVtaC" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detVtaCLabel">Detalle ventas: Crédito</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ventas-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Productos</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-table-body">
+                            {% for venta in lista_ventas_credito %}
+                                <tr class="venta-row">
+                                    <td>{{ venta.id }}</td>
+                                    <td>
+                                        <ul>
+                                            {% for producto_vendido in venta.productos_vendidos_set.all %}
+                                                <li>{{ producto_vendido.producto.nombre }} (Cantidad: {{ producto_vendido.cantidad }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>${{ venta.total_venta }}</td>
+                                    <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay ventas en tarjeta de crédito registradas.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/cierre.js' %}"></script>
+{% endblock %}

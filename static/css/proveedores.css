@@ -1,0 +1,129 @@
+/* Estilos generales */
+
+h1 {
+    text-align: center;
+    font-size: 50px;
+}
+
+.card {
+    width: 100%;
+    padding: 20px;
+    margin-top: 30px;
+    box-sizing: border-box;
+}
+#tablaProveedores{
+    margin-top: 20px;
+}
+
+/* Contenedor del buscador y botón juntos */
+
+
+#busqueda {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 300px;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+/* Estilos de la tabla */
+
+
+/* Responsive para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .busqueda-contenedor {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #busqueda {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn-success {
+        width: 100%;
+    }
+    table {
+        font-size: 14px;
+        display: block; 
+        overflow-x: auto; 
+        white-space: nowrap; 
+    }
+    .card{
+        margin-top: 150px;
+    }
+}
+/* Estilos generales del modal */
+.modal-content {
+    border-radius: 10px; /* Bordes redondeados para el modal */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
+    padding: 20px;
+    background-color: #fff; /* Fondo blanco */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: none; /* Quitar el borde por defecto */
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre los elementos del formulario */
+}
+
+.modal-body form input, 
+.modal-body form select, 
+.modal-body form button {
+    width: 100%; /* Asegurar que los inputs ocupen el ancho completo */
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.modal-body form button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-body form button:hover {
+    background-color: #218838;
+}
+
+.btn-close {
+    background-color: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Estilo del fondo cuando el modal esté activo */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+}
+
+/* Estilos adicionales para hacer el modal responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%; /* Hacer que el modal ocupe casi todo el ancho en pantallas pequeñas */
+    }
+}

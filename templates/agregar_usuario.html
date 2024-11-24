@@ -1,0 +1,74 @@
+<div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Nuevo usuario</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form action="{% url 'agregar_empleado' %}" method="POST" id="form-nuevo-usuario">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label for="email" class="form-label">Correo</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="dni" class="form-label">DNI</label>
+                            <input type="text" class="form-control" id="dni" name="dni" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="direccion" class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="direccion" name="dirección" required>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" required>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label for="username" class="form-label">Nombre de usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+
+                        <div class="col-md-12 mb-3 position-relative">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control pe-5" id="password" name="password" required>
+                            <i id="password_icon" class="bi bi-eye-slash-fill position-absolute top-50 end-0 me-3" onclick="togglePassword('password', 'password_icon')" style="cursor: pointer; transform: translateY(-50%);"></i>
+                        </div>
+
+                        <div class="col-md-12 mb-3 position-relative">
+                            <label for="password_confirm" class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control pe-5" id="password_confirm" name="password_confirm" required>
+                            <i id="password_confirm_icon" class="bi bi-eye-slash-fill position-absolute top-50 end-0 me-3" onclick="togglePassword('password_confirm', 'password_confirm_icon')" style="cursor: pointer; transform: translateY(-50%);"></i>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label for="group" class="form-label">Grupo</label>
+                            <select class="form-select" id="group" name="group" required>
+                                <option value="" disabled selected>Seleccione un grupo</option>
+                                <option value="Administrador">Administrador</option>
+                                <option value="Empleado">Empleado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" id="btn-agregar" class="btn btn-success">Agregar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </form>
+        </div>
+    </div>
+</div>

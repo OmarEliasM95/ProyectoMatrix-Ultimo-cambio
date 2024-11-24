@@ -1,0 +1,81 @@
+h1{
+    text-align: center;
+    font-size: 50px;
+}
+
+.card {
+    width: 100%;
+    padding: 20px;
+    margin-top: 30px;
+    box-sizing: border-box;
+}
+#busqueda {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 300px;
+}
+#tablaEmpleados{
+    margin-top: 20px;
+
+}
+
+.modal {
+    transition: opacity 0.3s ease;
+}
+
+.acciones{
+    display: inline-block;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.bi-eye-slash-fill, .bi-eye-fill {
+    cursor: pointer;
+    position: absolute;
+    top: 70%;
+    right: 15px;
+    transform: translateY(-50%);
+}
+
+
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .contenido {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    input[type="text"] {
+        width: calc(100% - 120px);
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+
+    button {
+        width: 100px;
+        margin: 0;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+
+    table {
+        font-size: 14px;
+        display: block; 
+        overflow-x: auto; 
+        white-space: nowrap; 
+    }
+    .card{
+        margin-top: 150px;
+    }
+}
